@@ -1,7 +1,4 @@
 ﻿
-using Gherkin;
-using Newtonsoft.Json.Linq;
-using System.Text;
 
 namespace WebAPI.Support
 {
@@ -10,6 +7,7 @@ namespace WebAPI.Support
         protected HttpClient _client;
         protected HttpRequestMessage _request;
         protected HttpRequestMessage _response;
+        public string res;
     }
 
     class UploadMethod: BaseMethod
@@ -26,6 +24,7 @@ namespace WebAPI.Support
             };
             _request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
             HttpResponseMessage _response = _client.SendAsync(_request).Result;
+            res = _response.Content.ReadAsStringAsync().Result;
         }
     }
 
@@ -64,7 +63,28 @@ namespace WebAPI.Support
 
             _request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
             HttpResponseMessage _response = _client.SendAsync(_request).Result;
+            res = _response.Content.ReadAsStringAsync().Result;
         }
+    }
+
+    class CheckFiles: BaseMethod
+    {
+        public CheckFiles(string token, string dropboxpath)
+        {
+            _client = new HttpClient();
+            HttpRequestMessage _request = new HttpRequestMessage
+            {
+                Method = HttpMethod.Post,
+                RequestUri = new Uri("https://api.dropboxapi.com/2/files/list_folder"),
+                Headers = { { "Authorization", $"Bearer {token}" } },
+                Content = new StringContent($"{{\"path\": \"{dropboxpath}\"}}", Encoding.UTF8, "application/json")
+            };
+
+            _request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+            HttpResponseMessage _response = _client.SendAsync(_request).Result;
+            res = _response.Content.ReadAsStringAsync().Result;
+        }
+
     }
 
 }
